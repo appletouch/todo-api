@@ -1,22 +1,30 @@
 /**
  * Created by PKoolwijk on 1-11-2015.
  */
+
+
+var bodyparser =require('body-parser');
 var express =require('express');
 var app = express();
 var PORT = process.env.PORT||3000;
+
+var todoNextid= 4;
+
+app.use(bodyparser.json());
+
 var todos =[{
         id:1,
-        description:"meet me today",
+        description:"meet me today(local)",
         completed:false
 },
     {
         id:2,
-        description:"Go shopping",
+        description:"Go shopping(local)",
         completed:false
     },
     {
         id:3,
-        description:"Go surfing",
+        description:"Go surfing(local)",
         completed:false
     }
 
@@ -51,11 +59,25 @@ app.get('/todos/:id', function(req, res){
 
 })
 
+app.post('/todos',function(req, res){
+    var body = req.body;
+    console.log('description:' + ' ' + body.description);
+    body.id =todoNextid++;
+
+    todos.push(body);
+
+    res.json(body);
+
+
+})
+
+
 
 app.listen(PORT, function(){
     console.log('Listening on port: ' + PORT)
 
 })
+
 
 
 
