@@ -62,6 +62,12 @@ app.get('/todos', function(req, res){
         filteredTodos= _.where(filteredTodos,{completed:false})
     }
 
+    if(queryParams.hasOwnProperty("s") && queryParams.s.length>0){
+      console.log('Searching in description');
+        filteredTodos= _.filter(filteredTodos,function(todo){
+            return todo.description.toLowerCase().indexOf(queryParams.s.toLowerCase())> -1
+        })
+    }
     res.json(filteredTodos)
 });
 
