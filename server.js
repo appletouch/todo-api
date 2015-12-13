@@ -48,10 +48,11 @@ app.get('/',function(req,res){
 //******ALL TODOS
 //get request gets all the todos
 
+////get request gets all the todos when no parameters are send.
 //GET /todos?completed=true
 app.get('/todos', function(req, res){
-    var queryParams = req.query
-    var filteredTodos = todos
+    var queryParams = req.query;
+    var filteredTodos = todos;
     //if has property completed && completed = true
     //filtered todos
     if(queryParams.hasOwnProperty('completed')&& queryParams.completed==='true'){
@@ -62,19 +63,14 @@ app.get('/todos', function(req, res){
     }
 
     res.json(filteredTodos)
-})
-
-////get request gets all the todos
-//app.get('/todos', function(req, res){
-//    res.json(todos)
-//})
+});
 
 //******SINGLE TODO
 //Single todo with endppoint
 app.get('/todos/:id', function(req, res){
 
     var todoid = parseInt(req.params.id,10);
-    var matchedTodo = _.findWhere(todos,{id:todoid})
+    var matchedTodo = _.findWhere(todos,{id:todoid});
 
 
     //todos.forEach(function(todo){
@@ -89,7 +85,7 @@ app.get('/todos/:id', function(req, res){
         res.status(404).send();
     }
 
-})
+});
 
 //******NEW TODO
 app.post('/todos',function(req, res){
@@ -109,12 +105,12 @@ app.post('/todos',function(req, res){
     res.json(body);
 
 
-})
+});
 
 //******DELETE TODO
 app.delete('/todos/:id', function(req, res){
     var todoid = parseInt(req.params.id,10);
-    idToDelete=_.indexOf(todos, _.findWhere(todos, { id : todoid})) //finds position in array to delete
+    idToDelete=_.indexOf(todos, _.findWhere(todos, { id : todoid})); //finds position in array to delete
     //idToDelete2= _.findWhere(todos, { id : todoid})  //finds whole object in array to delete.
 
     if(idToDelete!=-1){
@@ -129,18 +125,18 @@ app.delete('/todos/:id', function(req, res){
     else {
         res.status(404).json({"error": "No todo found while deleting"});
     }
-   })
+   });
 
 //******UPDATE TODO
 app.put('/todos/:id', function(req, res){
-    var todoId =parseInt(req.params.id, 10)
-    var matchedTodo= _.findWhere(todos,{id:todoId})
+    var todoId =parseInt(req.params.id, 10);
+    //var matchedTodo= _.findWhere(todos,{id:todoId})
 
     //prevent extra fields
     var body = _.pick(req.body,'description','completed');
     var validAttributes={};
 
-    idToUpdate=_.indexOf(todos, _.findWhere(todos, { id : todoId})) //finds position in array to delete
+    idToUpdate=_.indexOf(todos, _.findWhere(todos, { id : todoId})); //finds position in array to delete
     if (idToUpdate<0) {
         res.status(404).send("Id to update not found")
     }
@@ -160,10 +156,10 @@ app.put('/todos/:id', function(req, res){
         return res.status(400).send()
     }
 
-    console.log(validAttributes)
+    console.log(validAttributes);
 
-    objectToUpdate= _.findWhere(todos, { id : todoId})
-    _.extend(objectToUpdate,validAttributes)
+    objectToUpdate= _.findWhere(todos, { id : todoId});
+    _.extend(objectToUpdate,validAttributes);
 
     //OR
 
@@ -177,15 +173,14 @@ app.put('/todos/:id', function(req, res){
 
 
 
-})
+});
 
 
 //******START APPLICATION!!!
-var server =app.listen(PORT, function(){
+app.listen(PORT, function(){
     console.log('Listening on port: ' + PORT)
 
-})
-
+});
 
 
 
