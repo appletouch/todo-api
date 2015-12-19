@@ -190,13 +190,20 @@ app.post('/todos', function (req, res) {
 //******DELETE TODO
 app.delete('/todos/:id', function (req, res) {
     var todoid = parseInt(req.params.id, 10);
-    db.todo.destroy(todoid).then(
-        function() {
-            res.status(200).send('record deleted')
+    db.todo.destroy({
+        where:{id:todoid}
+    }).then(
+        function(numberDeleted) {
+            if (numberDeleted === 0) {
+                res.status(404).json({error: 'no to do is found'})
+            }
+            else {
+                res.status(204).json(numberDeleted + ' records deleted')
+            }
         },
-        function(e){
+        function(){
 
-            res.status(500).json(e.description.toJSON());
+            res.status(500).send();
         }
     )});
 

@@ -1,5 +1,6 @@
 /**
  * Created by PKoolwijk on 15-12-2015.
+ * Hope this fixes my problem
  */
 
 var env = process.env.NODE_ENV||'development';
