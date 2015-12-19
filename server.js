@@ -53,23 +53,66 @@ app.get('/', function (req, res) {
 //GET /todos?completed=true
 app.get('/todos', function (req, res) {
     var queryParams = req.query;
-    var filteredTodos = todos;
-    //if has property completed && completed = true
-    //filtered todos
-    if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
-        filteredTodos = _.where(filteredTodos, {completed: true})
-    }
-    else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
-        filteredTodos = _.where(filteredTodos, {completed: false})
+    var whereStatment ={};  //empty object to fille with where propeties
+
+    if (queryParams.hasOwnProperty('completed')) {
+        if (queryParams.completed === 'true') {
+            whereStatment.completed =  true
+        }
+        else {
+            whereStatment.completed = false
+        }
     }
 
     if (queryParams.hasOwnProperty("s") && queryParams.s.length > 0) {
         console.log('Searching in description');
-        filteredTodos = _.filter(filteredTodos, function (todo) {
-            return todo.description.toLowerCase().indexOf(queryParams.s.toLowerCase()) > -1
-        })
+        whereStatment.description={$like: '%'+ queryParams.s.toString() +'%'}
+
     }
-    res.json(filteredTodos)
+
+
+    db.todo.findAll({
+        where:whereStatment
+    }).then(
+        function (todos) {
+            if (todos.length > 0) {
+
+                todos.forEach(function (todo) {
+                    console.log(todo.toJSON());
+                });
+                res.json(todos);
+            }
+            else {
+                console.log('*** No Todo found in selection with specified the "where" clause ***');
+                res.status(404).send('No Todo found in selection with specified the "where" clause')
+            }},
+        function (e) {
+            res.status(500).json(e.description.toJSON()); //if fails return return error
+
+        }
+    );
+
+    //***************THIS CODE IS ONLY USED IN THE ARRAY VERSION
+    //var queryParams = req.query;
+    //var filteredTodos = todos;
+    ////if has property completed && completed = true
+    ////filtered todos
+    //if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
+    //    filteredTodos = _.where(filteredTodos, {completed: true})
+    //}
+    //else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
+    //    filteredTodos = _.where(filteredTodos, {completed: false})
+    //}
+    //
+    //if (queryParams.hasOwnProperty("s") && queryParams.s.length > 0) {
+    //    console.log('Searching in description');
+    //    filteredTodos = _.filter(filteredTodos, function (todo) {
+    //        return todo.description.toLowerCase().indexOf(queryParams.s.toLowerCase()) > -1
+    //    })
+    //}
+    //res.json(filteredTodos)
+    //***************THIS CODE IS ONLY USED IN THE ARRAY VERSION
+
 });
 
 //******SINGLE TODO
@@ -125,7 +168,7 @@ app.post('/todos', function (req, res) {
                 res.json(todo.toJSON()); //if succesfull response with 200 and res.json(body);
             },
             function (e) {
-                res.status.json(e); //if fails return "res.status(400).json(e)"
+                res.status(500).json(e.description.toJSON()); //if fails return error
 
             });
 
@@ -147,22 +190,32 @@ app.post('/todos', function (req, res) {
 //******DELETE TODO
 app.delete('/todos/:id', function (req, res) {
     var todoid = parseInt(req.params.id, 10);
-    idToDelete = _.indexOf(todos, _.findWhere(todos, {id: todoid})); //finds position in array to delete
-    //idToDelete2= _.findWhere(todos, { id : todoid})  //finds whole object in array to delete.
+    db.todo.destroy(todoid).then(
+        function() {
+            res.status(200).send('record deleted')
+        },
+        function(e){
 
-    if (idToDelete != -1) {
-        try {
-            todos.splice(idToDelete, 1);
-            res.status(200).json({"Succes": "deleted id:" + todoid});
+            res.status(500).json(e.description.toJSON());
         }
-        catch (e) {
-            res.status(404).send();
-        }
-    }
-    else {
-        res.status(404).json({"error": "No Todo found while deleting"});
-    }
-});
+    )});
+
+    //idToDelete = _.indexOf(todos, _.findWhere(todos, {id: todoid})); //finds position in array to delete
+    ////idToDelete2= _.findWhere(todos, { id : todoid})  //finds whole object in array to delete.
+    //
+    //if (idToDelete != -1) {
+    //    try {
+    //        todos.splice(idToDelete, 1);
+    //        res.status(200).json({"Succes": "deleted id:" + todoid});
+    //    }
+    //    catch (e) {
+    //        res.status(404).send();
+    //    }
+    //}
+    //else {
+    //    res.status(404).json({"error": "No Todo found while deleting"});
+    //}
+
 
 //******UPDATE TODO
 app.put('/todos/:id', function (req, res) {
