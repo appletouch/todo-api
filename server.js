@@ -237,26 +237,28 @@ app.put('/todos/:id', function (req, res) {
         attributes.description = body.description
     }
 
-    //we don't use the Model method but we use the instance method
 
+    //we use a model method findByID so we can updated it (returns a promise and thus needs 2 call backfunctions.
+    //we don't use the Model method but we use the instance method to update
     db.todo.findById(todoId).then(             //lookup for id to update.
 
-        function(todo){                        //first call(OK) back for findbyid
+        function(todo){                        //first call back of the promise(OK) back for findbyid
             if(todo){
-                return todo.update(attributes);    //OK and found
+                return todo.update(attributes).then(                            //we don't use the Model method but we use the instance method
+                                                function(todo){                //follow up when findbyId went well and found
+                                                        res.json(todo.toJSON());   //OK(200) and found updated id returned
+                                                },function(e){
+                                                        res.status(400).json(e);
+                                                });
             }
             else{
-                res.status(404).send();            //OK but not found
+                res.status(404).send();            //OK but record to updated not found
             }
         },
-        function(){                           //second call(NOK) back for findByID
+        function(){                           //second call back of the promise (NOK) back for findByID
             res.status(500).send();
         }
-    ).then(function(todo){                //follow up when findbyId went well and found
-        res.json(todo.toJSON());
-    },function(e){
-        res.status(400).json(e);
-    });
+    );
 
 
 
@@ -309,7 +311,7 @@ app.put('/todos/:id', function (req, res) {
 
 //Call syc and add promise callback function.
 db.sequelize.sync(
-//if set to true database will be recreated everytime.
+    //if set to true database will be recreated everytime application starts.
     {force: false}
 ).then(function () {
     //******START APPLICATION!!!
