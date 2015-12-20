@@ -227,46 +227,80 @@ app.delete('/todos/:id', function (req, res) {
 //******UPDATE TODO
 app.put('/todos/:id', function (req, res) {
     var todoId = parseInt(req.params.id, 10);
-    //var matchedTodo= _.findWhere(todos,{id:todoId})
-
     //prevent extra fields
     var body = _.pick(req.body, 'description', 'completed');
-    var validAttributes = {};
-
-    idToUpdate = _.indexOf(todos, _.findWhere(todos, {id: todoId})); //finds position in array to delete
-    if (idToUpdate < 0) {
-        res.status(404).send("Id to update not found")
+    var attributes = {};
+    if (body.hasOwnProperty('completed')) {
+        attributes.completed = body.completed
+    }
+    if (body.hasOwnProperty('description')) {
+        attributes.description = body.description
     }
 
+    //we don't use the Model method but we use the instance method
 
-    if (body.hasOwnProperty('completed') && _.isBoolean(body.completed)) {
-        validAttributes.completed = body.completed
-    }
-    else if (body.hasOwnProperty('completed')) {
-        return res.status(400).send()
-    }
+    db.todo.findById(todoId).then(             //lookup for id to update.
 
-    if (body.hasOwnProperty('description') && _.isString(body.description) && body.description.length > 0) {
-        validAttributes.description = body.description
-    }
-    else if (body.hasOwnProperty('description')) {
-        return res.status(400).send()
-    }
-
-    console.log(validAttributes);
-
-    objectToUpdate = _.findWhere(todos, {id: todoId});
-    _.extend(objectToUpdate, validAttributes);
-
-    //OR
-
-    //console.log('id to update: '+idToUpdate)
-    //todos[idToUpdate].description=validAttributes.description
-    //todos[idToUpdate].completed=validAttributes.completed
+        function(todo){                        //first call(OK) back for findbyid
+            if(todo){
+                return todo.update(attributes);    //OK and found
+            }
+            else{
+                res.status(404).send();            //OK but not found
+            }
+        },
+        function(){                           //second call(NOK) back for findByID
+            res.status(500).send();
+        }
+    ).then(function(todo){                //follow up when findbyId went well and found
+        res.json(todo.toJSON());
+    },function(e){
+        res.status(400).json(e);
+    });
 
 
-    //respond json send a 200 status back
-    res.json(todos[idToUpdate])
+
+    //var todoId = parseInt(req.params.id, 10);
+    ////var matchedTodo= _.findWhere(todos,{id:todoId})
+    //
+    ////prevent extra fields
+    //var body = _.pick(req.body, 'description', 'completed');
+    //var validAttributes = {};
+    //
+    //idToUpdate = _.indexOf(todos, _.findWhere(todos, {id: todoId})); //finds position in array to delete
+    //if (idToUpdate < 0) {
+    //    res.status(404).send("Id to update not found")
+    //}
+    //
+    //
+    //if (body.hasOwnProperty('completed') && _.isBoolean(body.completed)) {
+    //    validAttributes.completed = body.completed
+    //}
+    //else if (body.hasOwnProperty('completed')) {
+    //    return res.status(400).send()
+    //}
+    //
+    //if (body.hasOwnProperty('description') && _.isString(body.description) && body.description.length > 0) {
+    //    validAttributes.description = body.description
+    //}
+    //else if (body.hasOwnProperty('description')) {
+    //    return res.status(400).send()
+    //}
+    //
+    //console.log(validAttributes);
+    //
+    //objectToUpdate = _.findWhere(todos, {id: todoId});
+    //_.extend(objectToUpdate, validAttributes);
+    //
+    ////OR
+    //
+    ////console.log('id to update: '+idToUpdate)
+    ////todos[idToUpdate].description=validAttributes.description
+    ////todos[idToUpdate].completed=validAttributes.completed
+    //
+    //
+    ////respond json send a 200 status back
+    //res.json(todos[idToUpdate])
 
 
 });
@@ -274,7 +308,10 @@ app.put('/todos/:id', function (req, res) {
 
 
 //Call syc and add promise callback function.
-db.sequelize.sync().then(function () {
+db.sequelize.sync(
+//if set to true database will be recreated everytime.
+    {force: false}
+).then(function () {
     //******START APPLICATION!!!
     app.listen(PORT, function () {
         console.log('Listening on port: ' + PORT)
