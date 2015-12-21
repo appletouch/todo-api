@@ -41,6 +41,19 @@ var todos = [
 //******ALL METHODS FOR REST
 //**************************
 
+
+
+
+// insert this before your routes to lowercase all query string parameters
+app.use(function(req, res, next) {
+    for (var key in req.query)
+    {
+        req.query[key.toLowerCase()] = req.query[key];
+    }
+    next();
+});
+
+
 //******ROOT RETURNS TEXT
 app.get('/', function (req, res) {
     res.send('Peter\'s ToDo API root');
@@ -53,7 +66,7 @@ app.get('/', function (req, res) {
 //GET /todos?completed=true
 app.get('/todos', function (req, res) {
     var queryParams = req.query;
-    var whereStatment ={};  //empty object to fille with where propeties
+    var whereStatment ={};  //empty object to be  filled with where propeties
 
     if (queryParams.hasOwnProperty('completed')) {
         if (queryParams.completed === 'true') {
@@ -223,7 +236,6 @@ app.delete('/todos/:id', function (req, res) {
     //    res.status(404).json({"error": "No Todo found while deleting"});
     //}
 
-
 //******UPDATE TODO
 app.put('/todos/:id', function (req, res) {
     var todoId = parseInt(req.params.id, 10);
@@ -308,7 +320,6 @@ app.put('/todos/:id', function (req, res) {
 });
 
 
-
 //Call syc and add promise callback function.
 db.sequelize.sync(
     //if set to true database will be recreated everytime application starts.
@@ -321,7 +332,25 @@ db.sequelize.sync(
     });
 });
 
+app.post('/users', function(req,res){
+    // to access body you need to install module "body-parser"
 
+    //prevent extra fields(takes objects and attribute you want to keep)
+    var body = _.pick(req.body, 'email', 'password');
+
+    //create returns a promise
+    db.user.create(body).then(
+        function (user) {
+            res.json(user.toJSON()); //if succesfull response with 200 and res.json(body);
+        },
+        function (e) {
+            res.status(400).json(e); //if fails return error 400 + error in json
+
+        });
+
+
+
+});
 
 
 
