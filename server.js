@@ -7,6 +7,7 @@ var bodyparser = require('body-parser');
 var express = require('express');
 var _ = require("underscore");
 var db = require('./db.js');
+var bcrypt=require('bcryptjs');
 
 //******ALL VARIABLES
 var app = express();
@@ -344,6 +345,51 @@ app.post('/users', function(req,res){
 
 
 });
+
+app.post('/users/login', function(req,res) {
+    // to access body you need to install module "body-parser"
+
+    //prevent extra fields(takes objects and attribute you want to keep)
+    var body = _.pick(req.body, 'email', 'password');
+
+    if (typeof body.email  ==='string' && typeof body.password === 'string'){
+
+        db.user.findOne({
+            where:{
+                email:body.email
+            }
+        }).then(                      //returns a promise
+            //succes function
+            function(user)
+            {
+                if (user!=null && bcrypt.compareSync(body.password, user.get('password_hash'))){
+                    res.json(user.toJSON());
+                }else{
+                    res.status(401).send();
+                }
+            },
+            //error function
+            function(e){
+                res.status(500).json(e);
+            }
+        )
+
+
+    }else
+    {
+        res.status(400).send();
+    }
+
+
+
+
+
+
+});
+
+
+
+
 
 
 
