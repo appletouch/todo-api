@@ -5,7 +5,7 @@ var bcrypt = require('bcryptjs');
 var _ = require('underscore');
 
 module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('user',
+    var user= sequelize.define('user',
         {
         /*To define mappings between a model and a table, use the  define
           method. Sequelize will then automatically add the attributes
@@ -50,7 +50,7 @@ module.exports = function (sequelize, DataTypes) {
          hook.
         * */
         hooks:{
-            beforeValidate:function(user,option){
+            beforeValidate:function(user){
                 //user.email
                 if(typeof user.email==='string'){
                     user.email =user.email.toLowerCase();
@@ -58,6 +58,48 @@ module.exports = function (sequelize, DataTypes) {
 
             }
         },
+         classMethods:{
+             authenticate: function (body) {
+                 
+                 return new Promise(function(resolve, reject) {
+                     if (typeof body.email  ==='string' && typeof body.password === 'string'){
+                         //console.log("check:1-are strings")
+                         user.findOne({
+                             where:{
+                                 email:body.email
+                             }
+                         }).then(                      //returns a promise
+                             //succes function
+                             function(user)
+                             {
+                                 //console.log("check:2 -is succes")
+                                 if (user!=null && bcrypt.compareSync(body.password, user.get('password_hash'))){
+                                     console.log("check:3 - resolve");
+                                     return resolve(user);//specified in calling code
+
+                                 }else{
+                                     //console.log("check:4 - reject")
+                                     return reject();//specified in calling code
+                                 }
+                             },
+                             //error function
+                             function(){
+                                // console.log("check:5 - reject")
+                                 return reject();//specified in calling code
+                             }
+                         )
+
+
+                     }else
+                     {
+                         //console.log("check:6 -reject")
+                         return reject();//specified in calling code
+                     }
+                 });
+
+             }
+         }   
+        ,    
         //receives the json returned after creating a user and filter out the security sensitive info like salt and hashed password
         instanceMethods:{
             toPublicJSON:function(){
@@ -66,5 +108,7 @@ module.exports = function (sequelize, DataTypes) {
             }
         }
 
-    })
+    });
+
+    return user;
 };

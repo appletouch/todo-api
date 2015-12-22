@@ -7,7 +7,7 @@ var bodyparser = require('body-parser');
 var express = require('express');
 var _ = require("underscore");
 var db = require('./db.js');
-var bcrypt=require('bcryptjs');
+
 
 //******ALL VARIABLES
 var app = express();
@@ -352,38 +352,19 @@ app.post('/users/login', function(req,res) {
     //prevent extra fields(takes objects and attribute you want to keep)
     var body = _.pick(req.body, 'email', 'password');
 
-    if (typeof body.email  ==='string' && typeof body.password === 'string'){
-
-        db.user.findOne({
-            where:{
-                email:body.email
-            }
-        }).then(                      //returns a promise
-            //succes function
-            function(user)
-            {
-                if (user!=null && bcrypt.compareSync(body.password, user.get('password_hash'))){
-                    res.json(user.toJSON());
-                }else{
-                    res.status(401).send();
-                }
-            },
-            //error function
-            function(e){
-                res.status(500).json(e);
-            }
-        )
-
-
-    }else
-    {
-        res.status(400).send();
-    }
-
-
-
-
-
+    //calls the classMethod that returns a new promise which
+    // //specifies succes(resolve)and the failure(reject)
+    // function to be used
+    db.user.authenticate(body).then(
+        //function for succes(resolve)
+        function (user) {
+            res.json(user.toPublicJSON());
+        },
+        //function for failure(reject)
+        function () {
+            res.status(401).send();
+        }
+    )
 
 });
 
@@ -399,7 +380,7 @@ app.post('/users/login', function(req,res) {
 //Call syc and add promise callback function.
 db.sequelize.sync(
     //if set to true database will be recreated everytime application starts.
-    {force: false}
+    {force: true}
 ).then(function () {
     //******START APPLICATION!!!
     app.listen(PORT, function () {
