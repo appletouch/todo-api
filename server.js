@@ -358,9 +358,15 @@ app.post('/users/login', function(req,res) {
     db.user.authenticate(body).then(
         //function for succes(resolve)
         function (user) {
-            res.header('Auth',user.generateToken('authentication')).json(user.toPublicJSON());
+            var token = user.generateToken('authentication'); //call instance method
+            if(token){
+                res.header('Auth',token).json(user.toPublicJSON());
+            }else{
+                res.status(401).send(); //no token generated for some reason.
+            }
+
         },
-        //function for failure(reject)
+        //function for failure(reject)- in case user /pwd combination is not valid
         function () {
             res.status(401).send();
         }
