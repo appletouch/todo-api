@@ -41,8 +41,7 @@ var todos = [
 //******ALL METHODS FOR REST
 //**************************
 
-
-
+/*########## TODO SECTION ################## TODO SECTION ################## TODO SECTION ################## TODO SECTION ################## TODO SECTION ########*/
 
 // insert this before your routes to lowercase all query string parameters
 app.use(function(req, res, next) {
@@ -320,17 +319,10 @@ app.put('/todos/:id', function (req, res) {
 });
 
 
-//Call syc and add promise callback function.
-db.sequelize.sync(
-    //if set to true database will be recreated everytime application starts.
-    {force: false}
-).then(function () {
-    //******START APPLICATION!!!
-    app.listen(PORT, function () {
-        console.log('Listening on port: ' + PORT)
 
-    });
-});
+
+
+//########## USER AND AUTHENTICATION SECTION ################## USER AND AUTHENTICATION SECTION ################## USER AND AUTHENTICATION SECTION ########
 
 app.post('/users', function(req,res){
     // to access body you need to install module "body-parser"
@@ -341,7 +333,8 @@ app.post('/users', function(req,res){
     //create returns a promise
     db.user.create(body).then(
         function (user) {
-            res.json(user.toJSON()); //if succesfull response with 200 and res.json(body);
+            res.json(user.toPublicJSON()); //if succesfull response with 200 and res.json(body);
+            //toPublicJSON is sent to instanceMethod defined in user.js and only public field are filter out.
         },
         function (e) {
             res.status(400).json(e); //if fails return error 400 + error in json
@@ -354,4 +347,17 @@ app.post('/users', function(req,res){
 
 
 
+//########## GENERAL DATABASE SECTION ################## GENERAL DATABASE SECTION ################## GENERAL DATABASE SECTION ##################
 
+
+//Call syc and add promise callback function.
+db.sequelize.sync(
+    //if set to true database will be recreated everytime application starts.
+    {force: false}
+).then(function () {
+    //******START APPLICATION!!!
+    app.listen(PORT, function () {
+        console.log('Listening on port: ' + PORT)
+
+    });
+});
