@@ -100,6 +100,33 @@ module.exports = function (sequelize, DataTypes) {
                      }
                  });
 
+             },
+             findByToken: function (token) {
+                 return new Promise(function(resolve, reject) {
+                     try{
+                         var decodedJWT =jwt.verify(token,'signSecretKey');
+                         var bytes = cryptojs.AES.decrypt(decodedJWT.token, 'encryptionSecretKey' );
+                         var tokenData =JSON.parse(bytes.toString(cryptojs.enc.Utf8)); //WATCH OUT Utf8 is with U CAPITAL LETTER
+                         console.log(tokenData);
+                         console.log(tokenData.id);
+
+                         user.findById(tokenData.id).then(function(user) {
+                             if(user){
+                                 resolve(user);
+                             }else{
+                                 reject();
+                             }
+
+                         }, function (e) {
+                             reject();
+                         })
+                     }
+                     catch(e){
+                         reject();
+                     }
+                 })
+
+
              }
          }   
         ,    
@@ -118,8 +145,8 @@ module.exports = function (sequelize, DataTypes) {
                 try{
                     console.log('generateToken - encrypting');
                     var stringData =JSON.stringify({id:this.get('id'),type:type});
-                    var encryptedData= cryptojs.AES.encrypt(stringData,'mySecretKey').toString();
-                    var token =jwt.sign({token:encryptedData},'Peter2016');
+                    var encryptedData= cryptojs.AES.encrypt(stringData,'encryptionSecretKey').toString();
+                    var token =jwt.sign({token:encryptedData},'signSecretKey');
                     return token;
                 }
                 catch (e){

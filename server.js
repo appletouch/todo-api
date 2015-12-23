@@ -7,6 +7,7 @@ var bodyparser = require('body-parser');
 var express = require('express');
 var _ = require("underscore");
 var db = require('./db.js');
+var middleware = require('./middleware.js')(db); //passing in db on same line.
 
 
 //******ALL VARIABLES
@@ -55,7 +56,7 @@ app.use(function(req, res, next) {
 
 
 //******ROOT RETURNS TEXT
-app.get('/', function (req, res) {
+app.get('/',middleware.requireAuthentication ,function (req, res) {
     res.send('Peter\'s ToDo API root');
 });
 
@@ -64,7 +65,7 @@ app.get('/', function (req, res) {
 
 ////get request gets all the todos when no parameters are send.
 //GET /todos?completed=true
-app.get('/todos', function (req, res) {
+app.get('/todos', middleware.requireAuthentication ,function (req, res) {
     var queryParams = req.query;
     var whereStatment ={};  //empty object to be  filled with where propeties
 
@@ -130,7 +131,7 @@ app.get('/todos', function (req, res) {
 
 //******SINGLE TODO
 //Single Todo with endppoint
-app.get('/todos/:id', function (req, res) {
+app.get('/todos/:id', middleware.requireAuthentication ,function (req, res) {
 
     var todoid = parseInt(req.params.id, 10);
     db.todo.findById(todoid).then(
@@ -166,7 +167,7 @@ app.get('/todos/:id', function (req, res) {
 });
 
 //******NEW TODO
-app.post('/todos', function (req, res) {
+app.post('/todos',middleware.requireAuthentication , function (req, res) {
     // to access body you need to install module "body-parser"
 
     //prevent extra fields
@@ -201,7 +202,7 @@ app.post('/todos', function (req, res) {
 });
 
 //******DELETE TODO
-app.delete('/todos/:id', function (req, res) {
+app.delete('/todos/:id',middleware.requireAuthentication , function (req, res) {
     var todoid = parseInt(req.params.id, 10);
     db.todo.destroy({
         where:{id:todoid}
@@ -237,7 +238,7 @@ app.delete('/todos/:id', function (req, res) {
     //}
 
 //******UPDATE TODO
-app.put('/todos/:id', function (req, res) {
+app.put('/todos/:id',middleware.requireAuthentication , function (req, res) {
     var todoId = parseInt(req.params.id, 10);
     //prevent extra fields
     var body = _.pick(req.body, 'description', 'completed');
