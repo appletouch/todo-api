@@ -179,7 +179,13 @@ app.post('/todos',middleware.requireAuthentication , function (req, res) {
         // /call create on db.todo that returns a promise
         db.todo.create(body).then(
             function (todo) {
-                res.json(todo.toJSON()); //if succesfull response with 200 and res.json(body);
+                req.user.addTodo(todo).then(function () {
+                    return todo.reload();
+                }).then(function (todo) {
+                    res.json(todo.toJSON()); //if succesfull response with 200 and res.json(body);
+                })
+           
+           
             },
             function (e) {
                 res.status(500).json(e.description.toJSON()); //if fails return error
@@ -394,4 +400,7 @@ db.sequelize.sync(
         console.log('Listening on port: ' + PORT)
 
     });
+}).catch(function(error) {
+    // whooops
 });
+
