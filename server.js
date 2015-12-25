@@ -436,7 +436,7 @@ app.delete('/users/login',middleware.requireAuthentication, function (req, res) 
 //Call syc and add promise callback function.
 db.sequelize.sync(
     //if set to true database will be recreated everytime application starts.
-    {force: true}
+    {force: false}
 ).then(function () {
     //******START APPLICATION!!!
     app.listen(PORT, function () {
