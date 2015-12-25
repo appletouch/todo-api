@@ -56,8 +56,8 @@ app.use(function(req, res, next) {
 
 
 //******ROOT RETURNS TEXT
-app.get('/',middleware.requireAuthentication ,function (req, res) {
-    res.send('Peter\'s ToDo API root');
+app.get('/',function (req, res) {
+                res.send('Peter\'s ToDo API root');
 });
 
 //******ALL TODOS
@@ -85,8 +85,8 @@ app.get('/todos', middleware.requireAuthentication ,function (req, res) {
     }
 
     //Only get the todos of the user that is logged in.
-    whereStatment.userid=req.user.get('id');
-    //console.log(whereStatment.userid);
+    whereStatment.userId=req.user.get('id');
+    //console.log(whereStatment.userId);
 
 
     db.todo.findAll({
@@ -141,7 +141,7 @@ app.get('/todos/:id', middleware.requireAuthentication ,function (req, res) {
     db.todo.findOne({
         where:{
             id:todoId,
-            userid:req.user.get('id')
+            userId:req.user.get('id')
         }
     }).then(
         function(todo){
@@ -234,7 +234,7 @@ app.delete('/todos/:id',middleware.requireAuthentication , function (req, res) {
     db.todo.destroy({
         where:{
             id:todoId,
-            userid:req.user.get('id')
+            userId:req.user.get('id')
         }
     }).then(
         function(numberDeleted) {
@@ -289,7 +289,7 @@ app.put('/todos/:id',middleware.requireAuthentication , function (req, res) {
     db.todo.findOne({
         where:{
             id:todoId,
-            userid:req.user.get('id')
+            userId:req.user.get('id')
         }
     }).then(             //lookup for id to update.
 
