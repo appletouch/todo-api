@@ -56,7 +56,7 @@ app.use(function(req, res, next) {
 
 
 //******ROOT RETURNS TEXT
-app.get('/',function (req, res) {
+app.get('/',middleware.requireAuthentication,function (req, res) {
                 res.send('Peter\'s ToDo API root');
 });
 
@@ -388,6 +388,9 @@ app.post('/users', function(req,res){
 app.post('/users/login', function(req,res) {
     // to access body you need to install module "body-parser"
 
+    //creat variable
+    var userInstance; // needed to access the user outside the scope of the authenticate function
+
     //prevent extra fields(takes objects and attribute you want to keep)
     var body = _.pick(req.body, 'email', 'password');
 
@@ -398,22 +401,33 @@ app.post('/users/login', function(req,res) {
         //function for succes(resolve)
         function (user) {
             var token = user.generateToken('authentication'); //call instance method
-            if(token){
-                res.header('Auth',token).json(user.toPublicJSON());
-            }else{
-                res.status(401).send(); //no token generated for some reason.
-            }
+            userInstance=user;
+            return db.token.create({
+                token:token              ///set the value of token in tokon.js to datbase
+            })
+        }).then(
+        function (tokenInstance) {
 
-        },
+            res.header('Auth',tokenInstance.get('token')).json(userInstance.toPublicJSON());
+        }
+        ).catch(
         //function for failure(reject)- in case user /pwd combination is not valid
-        function () {
-            res.status(401).send();
+            function (e) {
+                res.status(401).send(e.toJSON());
         }
     )
 
 });
 
-
+app.delete('/users/login',middleware.requireAuthentication, function (req, res) {
+    req.token.destroy()
+        .then(function () {
+            res.status(204).json("You have been logged out");
+        }
+        ).catch(function () {
+        res.status(500).send();
+        })
+});
 
 
 //########## GENERAL DATABASE SECTION ################## GENERAL DATABASE SECTION ################## GENERAL DATABASE SECTION ##################
