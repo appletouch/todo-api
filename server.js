@@ -84,6 +84,10 @@ app.get('/todos', middleware.requireAuthentication ,function (req, res) {
 
     }
 
+    //Only get the todos of the user that is logged in.
+    whereStatment.userid=req.user.get('id');
+    //console.log(whereStatment.userid);
+
 
     db.todo.findAll({
         where:whereStatment
@@ -133,14 +137,19 @@ app.get('/todos', middleware.requireAuthentication ,function (req, res) {
 //Single Todo with endppoint
 app.get('/todos/:id', middleware.requireAuthentication ,function (req, res) {
 
-    var todoid = parseInt(req.params.id, 10);
-    db.todo.findById(todoid).then(
+    var todoId = parseInt(req.params.id, 10);
+    db.todo.findOne({
+        where:{
+            id:todoId,
+            userid:req.user.get('id')
+        }
+    }).then(
         function(todo){
             if(!!todo) {
                 res.json(todo.toJSON());
             }
             else{
-                res.status(404).send('Record not found')
+                res.status(404).send('Record not found or you are not authorized')
             }
         },
         function(e){
@@ -150,10 +159,10 @@ app.get('/todos/:id', middleware.requireAuthentication ,function (req, res) {
 
 
     //***************THIS CODE IS ONLY USED IN THE ARRAY VERSION
-    //var matchedTodo = _.findWhere(todos, {id: todoid});
+    //var matchedTodo = _.findWhere(todos, {id: todoId});
 
     //todos.forEach(function(Todo){
-    //    if (todoid===Todo.id){
+    //    if (todoId===Todo.id){
     //        matchedTodo=Todo;
     //    }
     //});
@@ -177,16 +186,25 @@ app.post('/todos',middleware.requireAuthentication , function (req, res) {
 
 
         // /call create on db.todo that returns a promise
-        db.todo.create(body).then(
-            function (todo) {
-                req.user.addTodo(todo).then(function () {
-                    return todo.reload();
-                }).then(function (todo) {
-                    res.json(todo.toJSON()); //if succesfull response with 200 and res.json(body);
-                })
-           
-           
-            },
+    db.todo.create(body).then(
+        function (todo) {
+
+            req.user.addTodo(todo)
+                .then(
+                    function () {
+                        /* If you need to get your instance in sync, you can use the method reload .
+                        It will fetch the current data from the database and overwrite the attributes
+                        of the model on which the method has been called on.
+                         */
+                        return todo.reload();
+                    })
+                .then(
+                    function (todo) {
+                        res.json(todo.toJSON()); //if succesfull response with 200 and res.json(body);
+                    })
+
+
+        },
             function (e) {
                 res.status(500).json(e.description.toJSON()); //if fails return error
 
@@ -209,16 +227,22 @@ app.post('/todos',middleware.requireAuthentication , function (req, res) {
 
 //******DELETE TODO
 app.delete('/todos/:id',middleware.requireAuthentication , function (req, res) {
-    var todoid = parseInt(req.params.id, 10);
+    var todoId = parseInt(req.params.id, 10);
+
+    //console.log('deleting-->todoId=' + todoId +'-+-' + 'user=' + req.user.get('id') );
+
     db.todo.destroy({
-        where:{id:todoid}
+        where:{
+            id:todoId,
+            userid:req.user.get('id')
+        }
     }).then(
         function(numberDeleted) {
             if (numberDeleted === 0) {
-                res.status(404).json({error: 'no to do is found'})
+                res.status(404).send('There is no ToDo to Delete.')
             }
             else {
-                res.status(204).json(numberDeleted + ' records deleted')
+                res.status(200).json(numberDeleted + ' records deleted')
             }
         },
         function(){
@@ -227,13 +251,13 @@ app.delete('/todos/:id',middleware.requireAuthentication , function (req, res) {
         }
     )});
 
-    //idToDelete = _.indexOf(todos, _.findWhere(todos, {id: todoid})); //finds position in array to delete
-    ////idToDelete2= _.findWhere(todos, { id : todoid})  //finds whole object in array to delete.
+    //idToDelete = _.indexOf(todos, _.findWhere(todos, {id: todoId})); //finds position in array to delete
+    ////idToDelete2= _.findWhere(todos, { id : todoId})  //finds whole object in array to delete.
     //
     //if (idToDelete != -1) {
     //    try {
     //        todos.splice(idToDelete, 1);
-    //        res.status(200).json({"Succes": "deleted id:" + todoid});
+    //        res.status(200).json({"Succes": "deleted id:" + todoId});
     //    }
     //    catch (e) {
     //        res.status(404).send();
@@ -257,9 +281,17 @@ app.put('/todos/:id',middleware.requireAuthentication , function (req, res) {
     }
 
 
-    //we use a model method findByID so we can updated it (returns a promise and thus needs 2 call backfunctions.
+    //we use a model method findOneso we can updated it (returns a promise and thus needs 2 call backfunctions.
     //we don't use the Model method but we use the instance method to update
-    db.todo.findById(todoId).then(             //lookup for id to update.
+
+    //console.log('updating->todoId=' + todoId +'-+-' + 'user=' + req.user.get('id') );
+
+    db.todo.findOne({
+        where:{
+            id:todoId,
+            userid:req.user.get('id')
+        }
+    }).then(             //lookup for id to update.
 
         function(todo){                        //first call back of the promise(OK) back for findbyid
             if(todo){
@@ -271,7 +303,7 @@ app.put('/todos/:id',middleware.requireAuthentication , function (req, res) {
                                                 });
             }
             else{
-                res.status(404).send();            //OK but record to updated not found
+                res.status(404).send('There is no ToDo to Update.');      //OK but record to updated not found
             }
         },
         function(){                           //second call back of the promise (NOK) back for findByID
@@ -380,9 +412,6 @@ app.post('/users/login', function(req,res) {
     )
 
 });
-
-
-
 
 
 

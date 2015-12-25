@@ -34,9 +34,9 @@ db.user = sequelize.import(__dirname + '/models/user.js');
 db.sequelize = sequelize;   //==>new Sequelize instance.......
 db.Sequelize = Sequelize;  //==> require('sequelize') libary
 
-
-db.todo.belongsTo(db.user);
-db.user.hasMany(db.todo);
+//here we make the joins between todo' and users
+db.todo.belongsTo(db.user); //one to one
+db.user.hasMany(db.todo); //one to many
 
 
 //export so it is available to other modueles
