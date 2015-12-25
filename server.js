@@ -242,7 +242,7 @@ app.delete('/todos/:id',middleware.requireAuthentication , function (req, res) {
                 res.status(404).send('There is no ToDo to Delete.')
             }
             else {
-                res.status(200).json(numberDeleted + ' records deleted')
+                res.status(200).json('record number '+ numberDeleted + ' deleted')
             }
         },
         function(){
