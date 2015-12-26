@@ -101,8 +101,7 @@ app.get('/todos', middleware.requireAuthentication ,function (req, res) {
                 res.json(todos);
             }
             else {
-                console.log('*** No Todo found in selection with specified the "where" clause ***');
-                res.status(404).send('No Todo found in selection with specified the "where" clause')
+                res.status(404).send('No Todo found in selection with specified "where" clause')
             }},
         function (e) {
             res.status(500).json(e.description.toJSON()); //if fails return return error
@@ -360,8 +359,6 @@ app.put('/todos/:id',middleware.requireAuthentication , function (req, res) {
 
 
 
-
-
 //########## USER AND AUTHENTICATION SECTION ################## USER AND AUTHENTICATION SECTION ################## USER AND AUTHENTICATION SECTION ########
 
 app.post('/users', function(req,res){
@@ -441,7 +438,6 @@ db.sequelize.sync(
     //******START APPLICATION!!!
     app.listen(PORT, function () {
         console.log('Listening on port: ' + PORT)
-
     });
 }).catch(function(error) {
     // whooops
