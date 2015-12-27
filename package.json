@@ -1,6 +1,10 @@
 {
-  "name": "application-name",
-  "version": "0.0.1",
+  "name": "Todo-api",
+  "description": "a really cool todo api with security",
+  "version": "1.0.0",
+  "engines": {
+    "node": "4.2.4"
+  },
   "dependencies": {
     "bcryptjs": "^2.3.0",
     "body-parser": "^1.14.1",
