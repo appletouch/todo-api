@@ -1,7 +1,6 @@
 /**
  * Created by PKoolwijk on 1-11-2015.
  */
-
 //******ALL REQUIRED MODULES
 var bodyparser = require('body-parser');
 var express = require('express');

@@ -11,7 +11,7 @@ module.exports = function (db) {
 
             //looking for a token in the database which was created with a valid login.
             db.token.findOne({
-                where: {tokenhash: cryptojs.MD5(token).toString()}    //is the hased value of the Auth header
+                where: {tokenHash: cryptojs.MD5(token).toString()}    //is the hased value of the Auth header
             }).then(                           //if we find a token
                 function (tokenInstance) {
                 if (!tokenInstance) {

@@ -1,7 +1,7 @@
 {
   "name": "Todo-api",
-  "description": "a really cool todo api with security",
-  "version": "1.0.0",
+  "description": "A really cool todo api with security",
+  "version": "1.0.1",
   "engines": {
     "node": "4.2.4"
   },
